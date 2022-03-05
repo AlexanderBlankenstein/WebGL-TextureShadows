@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>WebGL Demo</title>
+    <link rel="stylesheet" href="./webgl.css" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+      integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+      crossorigin="anonymous" defer>
+    </script>
+    <script src="webgl.js" defer></script>
+    <script src="loaddata.js" ></script>
+
+
+<script type="text/javascript">
+'use strict';
+
+   function init() {
+      window.onkeydown = checkKey;
+   }
+
+	// process keyboard events
+	// keypress triggers changes in variables which affect drawing
+    function checkKey(event) {
+      switch (event.keyCode) {
+        // number 1 
+        case 49: 
+           rotValue += Math.PI / 6;
+           break;
+		// letter a or A
+        case 65: 
+           if (ht == 0.1) {
+              ht = 0.2;
+           } else {
+              ht = 0.1;
+           }
+           break;
+		// letter r		
+        case 82: 
+           //?;
+           break;
+		// letter n 
+        case 78: 
+           if (numberParticles == 1) {
+              numberParticles = 10;
+           } else if (numberParticles == 10) {
+              numberParticles = 100;
+           } else if (numberParticles == 100) {
+              numberParticles = 1;
+           }
+           break;
+		// letter d 
+        case 68: 
+           if (directionOffset == 0.05) {
+              directionOffset = 0.1;
+           } else if (directionOffset == 0.1) {
+              directionOffset = 0.2;
+           } else if (directionOffset == 0.2) {
+              directionOffset = 0.05;
+           }
+           break;
+		// letter a
+        case 65: 
+           if (maximumAge == 10) {
+              maximumAge = 20;
+           } else if (maximumAge == 20) {
+              maximumAge = 50;
+           } else if (maximumAge == 50) {
+              maximumAge = 10;
+           }
+           break;
+		// letter s
+        case 83: 
+           if (ageVariation == 0) {
+              ageVariation = 5;
+           } else if (ageVariation == 5) {
+              ageVariation = 10;
+           } else if (ageVariation == 10) {
+              ageVariation = 0;
+           }
+           break;
+		// letter m 
+        case 77: 
+           if (repeating) {
+              repeating = false;
+           } else {
+              repeating = true;
+           }
+           break;
+		// letter p 
+        case 80: 
+           if (path) {
+              path = false;
+           } else {
+              path = true;
+           }
+           break;
+      }  // end switch
+   }
+
+   window.onload = init;
+
+</script>
+</head>
+
+  <body>
+    <canvas id="glcanvas" width="640" height="480"></canvas>
+  </body>
+</html>
