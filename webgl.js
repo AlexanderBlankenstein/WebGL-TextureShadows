@@ -5,6 +5,7 @@
 	// amount to rotate the scene on keypress
 //var rotValue = 0.0;
 var rotValue = Math.PI/4;
+var lightRotation = 0.0;
 
 main();
 
@@ -28,6 +29,7 @@ function main() {
 		attribute vec4 aVertexPosition;
 		attribute vec3 aVertexNormal;
 		attribute vec4 aVertexColor;
+    attribute vec3 aLightDirection;
 		uniform mat4 uNormalMatrix;
 		uniform mat4 uModelViewMatrix;
 		uniform mat4 uProjectionMatrix;
@@ -40,7 +42,7 @@ function main() {
 			// Apply lighting effect
 			highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
 			highp vec3 directionalLightColor = vec3(1, 1, 1);
-			highp vec3 directionalVector = normalize(vec3(0.85, 0.8, 0.75));
+      highp vec3 directionalVector = normalize(aLightDirection);
 			highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
 			highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
 			vLighting = ambientLight + (directionalLightColor * directional);
@@ -50,6 +52,7 @@ function main() {
   // Fragment shader program
 
 	const fsSource = `
+    precision mediump float;
     varying highp vec2 vTextureCoord;
 		varying lowp vec4 vColor;
 		varying highp vec3 vLighting;
@@ -81,6 +84,7 @@ function main() {
 			vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
       textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
       vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+      lightDirection: gl.getAttribLocation(shaderProgram, 'aLightDirection'),
 		},
 		uniformLocations: {
 			projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -203,6 +207,10 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
 	//---const cubeindices = loadcubevertexindices();
   //const planeindices = loadplanevertexindices();
 
+  // var lightBuffer = gl.createBuffer();
+	// gl.bindBuffer(gl.ARRAY_BUFFER, lightBuffer);
+	// gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lightDir), gl.DYNAMIC_DRAW);
+
   // Now send the element array to GL
 
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
@@ -213,6 +221,7 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
     textureCoord: textureCoordBuffer,
 		color: colorBuffer,
 		indices: indexBuffer,
+    //light: lightBuffer,
 	};
 }
 
@@ -262,7 +271,7 @@ function isPowerOf2(value) {
 //
 // Draw the scene.
 //
-function drawScene(gl, programInfo, objectsToDraw, texture, deltaTime) {
+function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 	gl.clearDepth(1.0);                 // Clear everything
 	gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -296,12 +305,15 @@ function drawScene(gl, programInfo, objectsToDraw, texture, deltaTime) {
   // Now move the drawing position a bit to where we want to
   // start drawing.
 
-
 	// advance frame count, used to control geometry changes
 	// this can be removed for the assignment
 	frameCount++;
 
 	// reload geometry data for each frame
+  cubebuffers = initBuffers(gl, loadcubevertices(), loadcubenormals(), loadcubecolors(), loadcubetextcoords(), loadcubevertexindices());
+	planebuffers = initBuffers(gl, loadplanevertices(), loadplanenormals(), loadplanecolors(), loadplanetextcoords(), loadplanevertexindices());
+
+
 	//buffers = initBuffers(gl, positions, vertexNormals, textureCoordinates, indices);
 
 	mat4.translate(modelViewMatrix,     // destination matrix
@@ -326,6 +338,41 @@ function drawScene(gl, programInfo, objectsToDraw, texture, deltaTime) {
     var buffers = object.bufferInfo;
     var programInfo = object.programInfo;
     var numVertex = object.numVertex;
+
+    //failed lighting
+    //var r = 0.75;
+    //var lightx = r * Math.cos(lightRotation);
+    //var lighty = r * Math.sin(lightRotation);
+
+    //var lightdir = [0.8, 1, 0.8];
+    //var adjustedLD = vec3.create();
+    //var newdirectionalVector = vec3.normalize(lightdir,adjustedLD);
+    //vec3.scale(adjustedLD, -1);
+
+    //gl.useProgram(programInfo.program);
+    //var lightDirection = gl.getUniformLocation(programInfo.program, programInfo.uniformLocations.directionalVector);
+    //gl.uniform3fv(programInfo.uniformLocations.directionalVectorUniform, adjustedLD);
+    //programInfo.attribLocations.directionalVector
+    //var newdirectionalVector = vec3.normalize(0.85, 0.8, 0.75)
+
+    //var lightDirection = programInfo.attribLocations.directionalVectorUniform;
+    //lightDirection.rotate(newdirectionalVector, newdirectionalVector, [-0.5, -1, -0.75]);
+    //var lightPosition = gl.getAttribLocation(programInfo.program, programInfo.attribLocations.directionalVector);
+    //mat4.translate(lightDirection, lightDirection, [-0.5, -1, -0.75]);
+    // {
+    //   var buffer = buffers.light;
+    //   var numComponents = 0;
+    //   var attribute = programInfo.attribLocations.test1;
+    //   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    //   gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
+    //   gl.enableVertexAttribArray(attribute);
+    // }
+
+    // reload geometry data for each frame
+  // cubebuffers = initBuffers(gl, loadcubevertices(), loadcubenormals(), loadcubecolors(), loadcubetextcoords(), loadcubevertexindices(), loadcubelightdirection());
+	// planebuffers = initBuffers(gl, loadplanevertices(), loadplanenormals(), loadplanecolors(), loadplanetextcoords(), loadplanevertexindices(), loadplanelightdirection());
+
+
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute
     {
@@ -350,14 +397,14 @@ function drawScene(gl, programInfo, objectsToDraw, texture, deltaTime) {
 
     // Tell WebGL how to pull out the texture coordinates from
     // the texture coordinate buffer into the textureCoord attribute.
-    {
-      var buffer = buffers.textureCoord;
-      var numComponents = 2;
-      var attribute = programInfo.attribLocations.textureCoord;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
-      gl.enableVertexAttribArray(attribute);
-    }
+    // {
+    //   var buffer = buffers.textureCoord;
+    //   var numComponents = 2;
+    //   var attribute = programInfo.attribLocations.textureCoord;
+    //   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    //   gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
+    //   gl.enableVertexAttribArray(attribute);
+    // }
 
     // Tell WebGL how to pull out the normals from
     // the normal buffer into the vertexNormal attribute.
@@ -368,6 +415,19 @@ function drawScene(gl, programInfo, objectsToDraw, texture, deltaTime) {
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
       gl.enableVertexAttribArray(attribute);
+    }
+
+    {
+      loadlightdirection();
+      var lx = getLightX();
+      var ly = getLightY();
+      var lz = getLightZ();
+      //var numComponents = 3;
+      var attribute = programInfo.attribLocations.lightDirection;
+      gl.vertexAttrib3f(attribute, lx, 1.3, lz);
+      //gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      //gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
+      //gl.enableVertexAttribArray(attribute);
     }
 
     // Tell WebGL which indices to use to index the vertices
@@ -413,6 +473,7 @@ function drawScene(gl, programInfo, objectsToDraw, texture, deltaTime) {
 
   // Update the rotation for the next draw
 	keyRotation = rotValue;
+  lightRotation += deltaTime;
 }
 
 //

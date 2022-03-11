@@ -1,7 +1,7 @@
 
 // some variables used in the demo, these can be removed
 var frameCount = 0;  // number of frames drawn
-var drawState = 1;   // flag the controls which object drawn
+var drawState = 0.1;   // flag the controls which object drawn
 var ht = 0.1;        // initial height of object, changed by keyboard input
 
 //var reinitalizeSystem = ?;
@@ -12,6 +12,9 @@ var ageVariation = 0;
 var repeating = true;
 var path = true;
 
+var lightX = 1.85;
+var lightY = 1.3; 
+var lightZ = 1.85;
 
 	// return the number of vertices in the object
 function getCubeVertexCount() {
@@ -266,6 +269,59 @@ function loadplanevertexindices() {
 	return [
 		0, 1, 2,     0, 2, 3,   // plane
 	];
+}
+
+//light stuff
+function distanceBetween(x1, x2, y1, y2, z1, z2) {
+	var d = ((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)) + ((z2-z1) * (z2-z1));
+	var s = Math.sqrt(d);
+	return s;
+}
+
+function rotateCoords(t) {
+	var r = distanceBetween(lightX, 0, lightY, 0, lightZ, 0);
+	lightX = (r * Math.cos(t));
+	lightZ = (r * Math.sin(t));
+	// lightX = x*Math.cos(t) + z*Math.sin(t);
+	// lightz = z*Math.cos(t) - x*Math.sin(t);
+}
+
+function loadlightdirection() {
+	rotateCoords(frameCount/100);
+	// if (frameCount % 25 == 0) {
+	// 	drawState += 0.1;
+	// 	//step += 1;
+	// 	//console.log(drawState);
+	// 	rotateCoords(drawState);
+	// 	console.log("X:" + lightX + " Y:" + lightY + " Z:" + lightZ);
+	// }
+}
+
+function getLightX() {
+	return lightX;
+}
+
+function getLightY() {
+	return lightY;
+}
+
+function getLightZ() {
+	return lightZ;
+}
+
+function loadplanelightdirection() {
+	// if (frameCount % 25 == 0) {
+	// 	drawState += 1;
+	// 	//step += 1;
+	// 	//console.log(drawState);
+	// 	rotateCoords(drawState);
+	// }
+	return [
+		lightX, lightY, lightZ,
+		lightX, lightY, lightZ,
+		lightX, lightY, lightZ,
+		lightX, lightY, lightZ,
+	]
 }
 
 	// texture array size and data
