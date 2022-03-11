@@ -14,15 +14,18 @@ var path = true;
 
 
 	// return the number of vertices in the object
-function getVertexCount() {
+function getCubeVertexCount() {
 		//return [12];
 		return [36];
 }
 
+function getPlaneVertexCount() {
+		//return [12];
+		return [6];
+}
 
-
-	// vertex positions
-function loadvertices() {
+	// vertex positions - 72
+function loadcubevertices() {
 	return [
 		// Front face
 		-1.0, -1.0,  1.0,
@@ -60,63 +63,24 @@ function loadvertices() {
 		-1.0,  1.0,  1.0,
 		-1.0,  1.0, -1.0,
 	];
+}
 	
-	/*
-	// every 25 frames causes the object being drawn to change to other
-	// object
-	// this can be removed for the assignment
-	if (frameCount % 25 == 0) {
-		drawState *= -1;
-	}
-
-	// use drawState to alternate between the objects (high and low objects)
-	// you will need to add more complex state control for the assignment
-	// all of the other loading function below do the same thing
-	if (drawState == 1) {
-		return [
-			-2.0, -ht, -2.0,
-			-2.0, 0.0,  -2.0,
-			-2.0, -ht, -2.1,
-
-			-2.0, -ht, -2.1,
-			-2.0, 0.0,  -2.0,
-			-2.0, 0.0, -2.1,
-
-			2.0, -ht,  2.0,
-			2.0, 0.0,   2.0,
-			2.0, -ht, 2.1,
-
-			2.0, -ht, 2.1,
-			2.0, 0.0,   2.0,
-			2.0, 0.0,  2.1,
-		];
-	} else {
-		return [
-			-2.0, 0.0, -2.0,
-			-2.0, ht,  -2.0,
-			-2.0, 0.0, -2.1,
-
-			-2.0, 0.0, -2.1,
-			-2.0, ht,  -2.0,
-			-2.0, ht, -2.1,
-
-			2.0, 0.0,  2.0,
-			2.0, ht,   2.0,
-			2.0, 0.0,  2.1,
-
-			2.0, 0.0,  2.1,
-			2.0, ht,   2.0,
-			2.0, ht,  2.1,
-		];
-	}
-	*/
+// - 12
+function loadplanevertices() {
+	return [		
+		//plane
+		-5.0, -1.0, -5.0,
+		-5.0, -1.0, 5.0,
+		5.0, -1.0, 5.0,
+		5.0, -1.0, -5.0,
+	];
 }
 
 
 	// normals array
 	// all triangles face in the same direction so the normals are
-	//   all the same 
-function loadnormals() {
+	//   all the same - 72
+function loadcubenormals() {
 	return [
 		// Front
 		0.0,  0.0,  1.0,
@@ -154,49 +118,26 @@ function loadnormals() {
 		-1.0,  0.0,  0.0,
 		-1.0,  0.0,  0.0
 	];
-	/*
-	if (drawState == 1) {
-		return [
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-		];
-	} else {
-		return [
-			0.0, 1.0,  1.0,
-			0.0, 1.0,  1.0,
-			0.0, 1.0,  1.0,
-			0.0, 1.0,  1.0,
-			0.0, 1.0,  1.0,
-			0.0, 1.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-			0.0, 0.0,  1.0,
-		];
-	}
-	*/
+}	
+	
+// - 12
+function loadplanenormals() {
+	return [
+		//plane
+		0.0,  1.0,  0.0,
+		0.0,  1.0,  0.0,
+		0.0,  1.0,  0.0,
+		0.0,  1.0,  0.0
+	];
 }
-
 
 	// texture coordinates
 	// the current texture support four colours
 	// 0.0 to 0.5, 0.0 to 0.5   colour 1
 	// 0.0 to 0.5, 0.5 to 1.0   colour 2
 	// 0.5 to 1.0, 0.0 to 0.5   colour 3
-	// 0.5 to 1.0, 0.5 to 1.0   colour 4
-function loadtextcoords() {
+	// 0.5 to 1.0, 0.5 to 1.0   colour 4 - 48
+function loadcubetextcoords() {
 	return  [
 		// Front
 		0.0,  0.0,
@@ -229,45 +170,87 @@ function loadtextcoords() {
 		1.0,  1.0,
 		0.0,  1.0,
 	];
+}
 	
-	/*
-	if (drawState == 1) {
-		return  [
-			0.5,  0.5,
-			1.0,  0.5,
-			1.0,  1.0,
-			0.5,  0.5,
-			1.0,  0.5,
-			1.0,  1.0,
-			0.5,  0.5,
-			1.0,  0.5,
-			1.0,  1.0,
-			0.5,  0.5,
-			1.0,  0.5,
-			1.0,  1.0,
-		];
-	} else {
-		return  [
-			0.0,  0.0,
-			0.5,  0.0,
-			0.5,  0.5,
-			0.0,  0.0,
-			0.5,  0.0,
-			0.5,  0.5,
-			0.0,  0.0,
-			0.5,  0.0,
-			0.5,  0.5,
-			0.0,  0.0,
-			0.5,  0.0,
-			0.5,  0.5,
-		];
-	}
-	*/
+// - 8
+function loadplanetextcoords() {
+	return  [
+		//plane
+		0.0,  0.0,
+		1.0,  0.0,
+		1.0,  1.0,
+		0.0,  1.0,
+	];
 }
 
+	// 1.0,  0.0,  0.0,  1.0,    // red
+	// 0.0,  1.0,  0.0,  1.0,    // green
+	// 0.0,  0.0,  1.0,  1.0,    // blue
+	// 1.0,  0.0,  1.0,  0.0,    // magenta
+	// 1.0,  1.0,  1.0,  1.0,    // white
+	// colors for the verticies
+	function loadcubecolors() {
+		//red
+		return [
+			// Front
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			// Back
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			// Top
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			// Bottom
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			// Right
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			// Left
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+			0.7,  0.0,  0.0,  1.0,
+		];
+	}
 
-	// load vertex indices
-function loadvertexindices() {
+	function loadplanecolors() {
+		//grey
+		return [
+			0.6,  0.6,  0.6,  1.0,
+			0.6,  0.6,  0.6,  1.0,
+			0.6,  0.6,  0.6,  1.0,
+			0.6,  0.6,  0.6,  1.0,
+			0.6,  0.6,  0.6,  1.0,
+			0.6,  0.6,  0.6,  1.0,
+		];
+	}
+
+	// load vertex indices - 36
+function loadcubevertexindices() {
 	return [
 		0,  1,  2,      0,  2,  3,    // front
 		4,  5,  6,      4,  6,  7,    // back
@@ -276,20 +259,14 @@ function loadvertexindices() {
 		16, 17, 18,     16, 18, 19,   // right
 		20, 21, 22,     20, 22, 23,   // left
 	];
-	
-	/*
-	if (drawState == 1) {
-		return [
-			0,1,2,  3,4,5, 6,7,8, 9,10,11
-		];
-	} else {
-		return [
-			0,1,2,  3,4,5, 6,7,8, 9,10,11
-		];
-	}
-	*/
 }
 
+// - 6
+function loadplanevertexindices() {
+	return [
+		0, 1, 2,     0, 2, 3,   // plane
+	];
+}
 
 	// texture array size and data
 function loadwidth() {
@@ -303,10 +280,10 @@ function loadheight() {
 function loadtexture() {
 	return( 
 		new Uint8Array(
-			[50,100,50,255,
-            100,150,100,255,
-            150,200,150,255,
-            200,250,200,255]
+			[255,255,255,255,
+			255,255,255,255,
+			255,255,255,255,
+			255,255,255,255]
 		) 
 	);
 }
