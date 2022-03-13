@@ -5,7 +5,6 @@
 	// amount to rotate the scene on keypress
 //var rotValue = 0.0;
 var rotValue = Math.PI/4;
-var lightRotation = 0.0;
 
 main();
 
@@ -29,6 +28,7 @@ function main() {
 		attribute vec4 aVertexPosition;
 		attribute vec3 aVertexNormal;
 		attribute vec4 aVertexColor;
+    attribute vec2 aTextureCoord;
     attribute vec3 aLightDirection;
 		uniform mat4 uNormalMatrix;
 		uniform mat4 uModelViewMatrix;
@@ -38,6 +38,7 @@ function main() {
 		varying lowp vec4 vColor;
 		void main(void) {
 			gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+      vTextureCoord = aTextureCoord;
 			vColor = aVertexColor;
 			// Apply lighting effect
 			highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
@@ -59,7 +60,7 @@ function main() {
 		uniform sampler2D uSampler;
 		void main(void) {
       highp vec4 texelColor = texture2D(uSampler, vTextureCoord);
-			gl_FragColor = vec4(vColor.rgb * vLighting, texelColor.a);
+			gl_FragColor = vec4(texelColor.rgb * vColor.rgb * vLighting, texelColor.a);
 		}
 	`;
 //			gl_FragColor = vColor;
@@ -97,16 +98,18 @@ function main() {
   // Here's where we call the routine that builds all the
   // objects we'll be drawing.
 
-	cubebuffers = initBuffers(gl, loadcubevertices(), loadcubenormals(), loadcubecolors(), loadcubetextcoords(), loadcubevertexindices());
-	planebuffers = initBuffers(gl, loadplanevertices(), loadplanenormals(), loadplanecolors(), loadplanetextcoords(), loadplanevertexindices());
+	cubebuffers = initBuffers(gl, loadcubevertices(), loadcubenormals(), loadcubecolors(), loadcubetextcoords(), loadcubevertexindices()); //, loadcubetexture(), loadcubewidth(), loadcubeheight());
+	planebuffers = initBuffers(gl, loadplanevertices(), loadplanenormals(), loadplanecolors(), loadplanetextcoords(), loadplanevertexindices()); //, loadplanetexture(),  loadplanewidth(), loadplaneheight());
 
   var objectsToDraw = [
     {
+      id: 1,
       programInfo: programInfo,
       bufferInfo: cubebuffers,
       numVertex: getCubeVertexCount(),
     },
     {
+      id: 2,
       programInfo: programInfo,
       bufferInfo: planebuffers,
       numVertex: getPlaneVertexCount(),
@@ -117,7 +120,7 @@ function main() {
   // data for primitives by calling gl.createBuffer, gl.bindBuffer,
   // and gl.bufferData
 
-	const texture = loadTexture(gl, 'cubetexture.png');
+	//const texture = loadTexture(gl);
 
 	var then = 0;
 
@@ -127,7 +130,10 @@ function main() {
 		const deltaTime = now - then;
 		then = now;
 
-		drawScene(gl, programInfo, objectsToDraw, texture, deltaTime);
+    const cubeTexture = loadTexture(gl, "cube");
+    const planeTexture = loadTexture(gl, "plane");
+
+		drawScene(gl, programInfo, objectsToDraw, cubeTexture, planeTexture, deltaTime);
 
 		requestAnimationFrame(render);
 	}
@@ -140,10 +146,12 @@ function main() {
 // Initialize the buffers we'll need. For this demo, we just
 // have one object -- a simple three-dimensional cube.
 //
-function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, indices) {
+function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, indices) { //, texturedata, wth, hght) {
+  //---------------------------------------------- buffer stuff.---------
+
   // Create a buffer for the vertex positions.
 
-	var positionBuffer = gl.createBuffer();
+	const positionBuffer = gl.createBuffer();
 
   // Select the positionBuffer as the one to apply buffer
   // operations to from here out.
@@ -153,7 +161,7 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
   // Now create an array of positions for the cube.
 
 	// load vertex data from loaddata.js
-	//-----const cubepositions = loadcubevertices();
+	//const cubepositions = loadcubevertices();
   //const planepositions = loadplanevertices();
 
   // Now pass the list of positions into WebGL to build the
@@ -164,11 +172,11 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
 
   // Set up the normals for the vertices, so that we can compute lighting.
 
-	var normalBuffer = gl.createBuffer();
+	const normalBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
 
 	// load normal data from loaddata.js
-	//------const cubevertexNormals = loadcubenormals();
+	//const cubevertexNormals = loadcubenormals();
   //const planevertexNormals = loadplanenormals();
 
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals),gl.DYNAMIC_DRAW);
@@ -177,17 +185,17 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
 	// load color data from the loaddata.js
 	//const colors = loadcolors()
 
-	var colorBuffer = gl.createBuffer();
+	const colorBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW);
 
   // Now set up the texture coordinates for the faces.
 
-  var textureCoordBuffer = gl.createBuffer();
+  const textureCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
 
   // load texture coordinates data from loaddata.js
-  //----const cubetextureCoordinates = loadcubetextcoords();
+  //const cubetextureCoordinates = loadcubetextcoords();
   //const planetextureCoordinates = loadplanetextcoords();
 
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates),gl.DYNAMIC_DRAW);
@@ -196,7 +204,7 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
   // Build the element array buffer; this specifies the indices
   // into the vertex arrays for each face's vertices.
 
-	var indexBuffer = gl.createBuffer();
+	const indexBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
   // This array defines each face as two triangles, using the
@@ -204,16 +212,13 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
   // position.
 
 	// load indices from loaddata.js
-	//---const cubeindices = loadcubevertexindices();
+	//const cubeindices = loadcubevertexindices();
   //const planeindices = loadplanevertexindices();
-
-  // var lightBuffer = gl.createBuffer();
-	// gl.bindBuffer(gl.ARRAY_BUFFER, lightBuffer);
-	// gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lightDir), gl.DYNAMIC_DRAW);
 
   // Now send the element array to GL
 
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.DYNAMIC_DRAW);
+
 
 	return {
 		position: positionBuffer,
@@ -221,7 +226,7 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
     textureCoord: textureCoordBuffer,
 		color: colorBuffer,
 		indices: indexBuffer,
-    //light: lightBuffer,
+    //texture: texture,
 	};
 }
 
@@ -230,39 +235,90 @@ function initBuffers(gl, positions, vertexNormals, colors, textureCoordinates, i
 // When the image finished loading copy it into the texture.
 //
 function loadTexture(gl, url) {
-	const texture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, texture);
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
 
   // Because images have to be download over the internet
   // they might take a moment until they are ready.
   // Until then put a single pixel in the texture so we can
   // use it immediately. When the image has finished downloading
   // we'll update the texture with the contents of the image.
-	const level = 0;
-	const internalFormat = gl.RGBA;
+  const level = 0;
+  const internalFormat = gl.RGBA;
+
+  const border = 0;
+  const srcFormat = gl.RGBA;
+  const srcType = gl.UNSIGNED_BYTE;
 
 	// load height and width functions from loaddata.js
-	const width = loadwidth();
-	const height = loadheight();
+  var width;
+  var height;
+  var pixel;
 
-	const border = 0;
-	const srcFormat = gl.RGBA;
-	const srcType = gl.UNSIGNED_BYTE;
+  if (url == "cube"){
+    width = loadcubewidth();
+    height = loadcubeheight();
+    pixel = loadcubetexture();
+  } else {
+    width = loadplanewidth();
+    height = loadplaneheight();
+    pixel = loadplanetexture();
+  }
 
 	// load texture from loaddata.js
-	const pixel = loadtexture();
+  
 
-	gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+  gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
                 width, height, border, srcFormat, srcType,
                 pixel);
 
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-	return texture;
+  return texture;
 }
+
+// function loadTexture(gl) {
+//   //texture data -------------------
+
+//   const texture = gl.createTexture();
+// 	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+//   // Because images have to be download over the internet
+//   // they might take a moment until they are ready.
+//   // Until then put a single pixel in the texture so we can
+//   // use it immediately. When the image has finished downloading
+//   // we'll update the texture with the contents of the image.
+// 	const level = 0;
+// 	const internalFormat = gl.RGBA;
+
+// 	// load height and width functions from loaddata.js
+// 	//const width = wth;
+// 	//const height = hght;
+//   const width = loadcubewidth();
+// 	const height = loadcubeheight();
+
+// 	const border = 0;
+// 	const srcFormat = gl.RGBA;
+// 	const srcType = gl.UNSIGNED_BYTE;
+
+// 	// load texture from loaddata.js
+// 	const pixel = loadcubetexture();
+//   //const pixel = texturedata;
+
+// 	gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+//                 width, height, border, srcFormat, srcType,
+//                 pixel);
+
+// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+// 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+//   return texture;
+// }
 
 function isPowerOf2(value) {
 	return (value & (value - 1)) == 0;
@@ -271,7 +327,7 @@ function isPowerOf2(value) {
 //
 // Draw the scene.
 //
-function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
+function drawScene(gl, programInfo, objectsToDraw, texture1, texture2, deltaTime) {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
 	gl.clearDepth(1.0);                 // Clear everything
 	gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -310,11 +366,10 @@ function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
 	frameCount++;
 
 	// reload geometry data for each frame
-  cubebuffers = initBuffers(gl, loadcubevertices(), loadcubenormals(), loadcubecolors(), loadcubetextcoords(), loadcubevertexindices());
-	planebuffers = initBuffers(gl, loadplanevertices(), loadplanenormals(), loadplanecolors(), loadplanetextcoords(), loadplanevertexindices());
-
-
+  cubebuffers = initBuffers(gl, loadcubevertices(), loadcubenormals(), loadcubecolors(), loadcubetextcoords(), loadcubevertexindices()); //, loadcubetexture(), loadcubewidth(), loadcubeheight());
+	planebuffers = initBuffers(gl, loadplanevertices(), loadplanenormals(), loadplanecolors(), loadplanetextcoords(), loadplanevertexindices()); //, loadplanetexture(), loadplanewidth(), loadplaneheight());
 	//buffers = initBuffers(gl, positions, vertexNormals, textureCoordinates, indices);
+
 
 	mat4.translate(modelViewMatrix,     // destination matrix
                  modelViewMatrix,     // matrix to translate
@@ -334,44 +389,12 @@ function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
 	mat4.invert(normalMatrix, modelViewMatrix);
 	mat4.transpose(normalMatrix, normalMatrix);
 
+  // go through each object and display it. 
   objectsToDraw.forEach(function(object) {
     var buffers = object.bufferInfo;
     var programInfo = object.programInfo;
     var numVertex = object.numVertex;
-
-    //failed lighting
-    //var r = 0.75;
-    //var lightx = r * Math.cos(lightRotation);
-    //var lighty = r * Math.sin(lightRotation);
-
-    //var lightdir = [0.8, 1, 0.8];
-    //var adjustedLD = vec3.create();
-    //var newdirectionalVector = vec3.normalize(lightdir,adjustedLD);
-    //vec3.scale(adjustedLD, -1);
-
-    //gl.useProgram(programInfo.program);
-    //var lightDirection = gl.getUniformLocation(programInfo.program, programInfo.uniformLocations.directionalVector);
-    //gl.uniform3fv(programInfo.uniformLocations.directionalVectorUniform, adjustedLD);
-    //programInfo.attribLocations.directionalVector
-    //var newdirectionalVector = vec3.normalize(0.85, 0.8, 0.75)
-
-    //var lightDirection = programInfo.attribLocations.directionalVectorUniform;
-    //lightDirection.rotate(newdirectionalVector, newdirectionalVector, [-0.5, -1, -0.75]);
-    //var lightPosition = gl.getAttribLocation(programInfo.program, programInfo.attribLocations.directionalVector);
-    //mat4.translate(lightDirection, lightDirection, [-0.5, -1, -0.75]);
-    // {
-    //   var buffer = buffers.light;
-    //   var numComponents = 0;
-    //   var attribute = programInfo.attribLocations.test1;
-    //   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    //   gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
-    //   gl.enableVertexAttribArray(attribute);
-    // }
-
-    // reload geometry data for each frame
-  // cubebuffers = initBuffers(gl, loadcubevertices(), loadcubenormals(), loadcubecolors(), loadcubetextcoords(), loadcubevertexindices(), loadcubelightdirection());
-	// planebuffers = initBuffers(gl, loadplanevertices(), loadplanenormals(), loadplanecolors(), loadplanetextcoords(), loadplanevertexindices(), loadplanelightdirection());
-
+    var objID = object.id;
 
     // Tell WebGL how to pull out the positions from the position
     // buffer into the vertexPosition attribute
@@ -397,14 +420,14 @@ function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
 
     // Tell WebGL how to pull out the texture coordinates from
     // the texture coordinate buffer into the textureCoord attribute.
-    // {
-    //   var buffer = buffers.textureCoord;
-    //   var numComponents = 2;
-    //   var attribute = programInfo.attribLocations.textureCoord;
-    //   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    //   gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
-    //   gl.enableVertexAttribArray(attribute);
-    // }
+    {
+      var buffer = buffers.textureCoord;
+      var numComponents = 2;
+      var attribute = programInfo.attribLocations.textureCoord;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
+      gl.enableVertexAttribArray(attribute);
+    }
 
     // Tell WebGL how to pull out the normals from
     // the normal buffer into the vertexNormal attribute.
@@ -417,17 +440,16 @@ function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
       gl.enableVertexAttribArray(attribute);
     }
 
+    // Tell WebGL how to pull out the Light directional vector from
+    // loaddata.js into the lightDirection attribute.
     {
       loadlightdirection();
       var lx = getLightX();
       var ly = getLightY();
       var lz = getLightZ();
-      //var numComponents = 3;
+
       var attribute = programInfo.attribLocations.lightDirection;
-      gl.vertexAttrib3f(attribute, lx, 1.3, lz);
-      //gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      //gl.vertexAttribPointer(attribute,numComponents,gl.FLOAT,false,0,0);
-      //gl.enableVertexAttribArray(attribute);
+      gl.vertexAttrib3f(attribute, lx, ly, lz);
     }
 
     // Tell WebGL which indices to use to index the vertices
@@ -453,15 +475,23 @@ function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
       normalMatrix);
 
     // Specify the texture to map onto the faces.
+    //var texture = buffers.texture;
 
-    // Tell WebGL we want to affect texture unit 0
+    // // Tell WebGL we want to affect texture unit 0
     gl.activeTexture(gl.TEXTURE0);
 
-    // Bind the texture to texture unit 0
-    gl.bindTexture(gl.TEXTURE_2D, texture);
 
-    // Tell the shader we bound the texture to texture unit 0
+    if (objID==1) {
+      gl.bindTexture(gl.TEXTURE_2D, texture1);
+    } else {
+      gl.bindTexture(gl.TEXTURE_2D, texture2);
+    }
+    // // Bind the texture to texture unit 0
+    // gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // // Tell the shader we bound the texture to texture unit 0
     gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
+
 
     {
       const vertexCount = numVertex; //getVertexCount();
@@ -469,11 +499,11 @@ function drawScene(gl, mprogramInfo, objectsToDraw, texture, deltaTime) {
       const offset = 0;
       gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
     }
-  });
+  }
+  );
 
   // Update the rotation for the next draw
 	keyRotation = rotValue;
-  lightRotation += deltaTime;
 }
 
 //
